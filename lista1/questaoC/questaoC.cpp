@@ -127,16 +127,6 @@ class LinkedList : public Node<T> {
             }
             return false;
         }
-
-        string toString() const {
-            string s = "";
-            Node<T>* temp = head->next;
-            while (temp != nullptr) {
-                s += temp->element;
-                temp = temp->next;
-            }
-            return s;
-        }
 };
 
 void printHeader() {
@@ -151,19 +141,15 @@ void printSeparator() {
 }
 
 void printKey(const int& key) {
-    if (key <= 10) {cout << "|     " << key << "    |";}  
-    else if (key <= 100) {cout << "|    " << key << "    |";}  
-    else {cout << "|   " << key << "    |";}
+    cout << "|   " << right << setw(3) << key << "    |      ";
 }
 
 void printLine(const int& line) {
-    if (line <= 10) {cout << "        " << line << "       |";}  
-    else if (line <= 100) {cout << "       " << line << "       |";}  
-    else {cout << "      " << line << "       |";}
+    cout << right << setw(3) << line << "       | ";
 }
 
 void printBrokenKeys(const string& brokenKeys) {
-    cout << " " << std::left << std::setw(28) << brokenKeys << "|\n";
+    cout << left << setw(28) << brokenKeys << "|\n";
 }
 
 int main() {
@@ -200,20 +186,30 @@ int main() {
             string currentLine = textLines.getValue();
             textLines.next();
 
+            LinkedList<char> lineLetters;
             bool canTypeLine = true;
+
             for (char character : currentLine) {
                 if (isalpha(character)) {
                     char lowerChar = tolower(character);
-                    allUsedLetters.insert(lowerChar);
+                    
+                    if (!lineLetters.contains(lowerChar)) {
+                        lineLetters.append(lowerChar);
+                    }
+
                     if (brokenKeysList.contains(lowerChar)) {
                         canTypeLine = false;
-                        break; 
                     }
                 }
             }
 
             if (canTypeLine) {
                 printableLines++;
+                lineLetters.moveToStart();
+                for (int j = 0; j < lineLetters.length(); ++j) {
+                    allUsedLetters.insert(lineLetters.getValue());
+                    lineLetters.next();
+                }
             }
         }
 
