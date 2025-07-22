@@ -1,86 +1,237 @@
 #include <iostream>
+#include <iomanip>
+#include <set>
+#include <cctype>
 using namespace std;
 
 template <typename T>
 class Node {
     public:
-        T data;
+        T element;
         Node<T>* next;
-        Node(T data) : data(data), next(nullptr) {};
+        Node(const T& element, Node<T>* next = NULL) : element(element), next(nullptr) {};
+        Node(Node<T>* next = NULL) : next(next) {};
 };
 
 template <typename T>
-class LinkedList {
+class LinkedList : public Node<T> {
     private:
         Node<T>* head;
+        Node<T>* tail;
+        Node<T>* current;
         int size;
-    
-    public:
-        LinkedList(): head(nullptr), size(0) {}
 
-        ~LinkedList() {
-            Node<T>* current = head;
-            while (current != nullptr) {
-                Node<T>* nextNode = current->next;
+        void init() {
+            current = tail = head = new Node<T>;
+            size = 0;
+        }
+
+        void removeALL() {
+            while (head != NULL) {
+                current = head;
+                head = head->next;
                 delete current;
-                current = nextNode;
             }
         }
 
+    public:
+        LinkedList() { init();}
+        ~LinkedList() { removeALL(); }
+
+        void clear() {removeALL(); init();}
+
         void insert(const T& data) {
-            Node<T>* newNode = new Node<T>(data);
-            newNode->next = head;
-            head = newNode;
+            current->next = new Node<T>(data, current->next);
+
+            if (tail == current) {
+                tail = current->next;
+            }
             size++;
         }
 
         void append(const T& data) {
-            Node<T>* newNode = new Node<T>(data);
-
-            if (head == nullptr) {
-                head = newNode;
-            } else {
-                Node<T>* current = head;
-                while (current->next != nullptr) {
-                    current = current->next;
-                }
-                current->next = newNode;
-            }
+            tail = tail->next = new Node<T>(data, NULL);
             size++;
         }
 
-        bool remove(const T& data) {
-            if (head == nullptr) {return false;}
-
-            if (head->data == data) {
-                Node<T>* temp = head;
-                head = head->next;
-                delete temp;
-                size--;
-                return true;
-            }
-
-            Node<T>* current = head;
-            while (current->next != nullptr && current->next->data != data) {
-                current = current->next;
-            }
-
-            if (current->next == nullptr) {return false;}
-
+        T remove() {
+            T data = current->next->element;
             Node<T>* temp = current->next;
-            current->next = temp->next;
+
+            if (tail == current->next) {
+                tail = current;
+            }
+            current->next = current->next->next;
             delete temp;
             size--;
-            return true;
+            return data;
         }
 
-        void display() {
-            Node<T>* current = head;
-            while (current != nullptr) {
-                cout << current->data << " ";
+        void moveToStart() {
+            current = head;
+        }
+
+        void moveToEnd() {
+            current = tail;
+        }
+
+        void prev() {
+            if (current == head) {
+                return;
+            }
+            Node<T>* temp = head;
+            while (temp->next != current) {
+                temp = temp->next;
+            }
+            current = temp;
+        }
+
+        void next() {
+            if (current->next != NULL) {
                 current = current->next;
             }
         }
 
-        int getSize() {return size;}
+        int length() const {
+            return size;
+        }
+
+        int currPos() const {
+            Node<T>* temp = head;
+            int i;
+
+            for (i = 0; temp != current; i++) {
+                temp = temp->next;
+            }
+            return i;
+        }
+
+        void moveToPos(int pos) {
+            current = head;
+            for (int i = 0; i < pos; i++) {
+                current = current->next;
+            }
+        }
+
+        const T& getValue() const {
+            return current->next->element;
+        }
+
+        bool contains(const T& data) const {
+            Node<T>* temp = head->next;
+            while (temp != nullptr) {
+                if (temp->element == data) {
+                    return true;
+                }
+                temp = temp->next;
+            }
+            return false;
+        }
+
+        string toString() const {
+            string s = "";
+            Node<T>* temp = head->next;
+            while (temp != nullptr) {
+                s += temp->element;
+                temp = temp->next;
+            }
+            return s;
+        }
 };
+
+void printHeader() {
+    cout << "+----------+----------------+-----------------------------+\n";
+    cout << "| Keyboard | # of printable | Additionally, the following |\n";
+    cout << "|          |      lines     |  letter keys can be broken  |\n";
+    cout << "+----------+----------------+-----------------------------+\n";
+}
+
+void printSeparator() {
+    cout << "+----------+----------------+-----------------------------+\n";
+}
+
+void printKey(const int& key) {
+    if (key <= 10) {cout << "|     " << key << "    |";}  
+    else if (key <= 100) {cout << "|    " << key << "    |";}  
+    else {cout << "|   " << key << "    |";}
+}
+
+void printLine(const int& line) {
+    if (line <= 10) {cout << "        " << line << "       |";}  
+    else if (line <= 100) {cout << "       " << line << "       |";}  
+    else {cout << "      " << line << "       |";}
+}
+
+void printBrokenKeys(const string& brokenKeys) {
+    cout << " " << std::left << std::setw(28) << brokenKeys << "|\n";
+}
+
+int main() {
+    printHeader();
+
+    int keyboardNum = 1;
+    string brokenKeysInput;
+
+    while (cin >> brokenKeysInput && brokenKeysInput != "finish") {
+        LinkedList<char> brokenKeysList;
+        for (char characters : brokenKeysInput) {
+            if (isalpha(characters)) {
+                brokenKeysList.append(tolower(characters));
+            }
+        }
+
+        int printableLines = 0;
+        set<char> allUsedLetters;
+
+        string lineContent;
+        LinkedList<string> textLines;
+        while (getline(cin >> ws, lineContent)) {
+            if (lineContent != "END") {
+                textLines.append(lineContent);    
+            } else {
+                textLines.append(lineContent);
+                break;
+            }
+            
+        }
+
+        textLines.moveToStart();
+        for (int i = 0; i < textLines.length(); ++i) {
+            string currentLine = textLines.getValue();
+            textLines.next();
+
+            bool canTypeLine = true;
+            for (char character : currentLine) {
+                if (isalpha(character)) {
+                    char lowerChar = tolower(character);
+                    allUsedLetters.insert(lowerChar);
+                    if (brokenKeysList.contains(lowerChar)) {
+                        canTypeLine = false;
+                        break; 
+                    }
+                }
+            }
+
+            if (canTypeLine) {
+                printableLines++;
+            }
+        }
+
+        string additionalBrokenKeys = "";
+        for (char character = 'a'; character <= 'z'; ++character) {
+            if (!brokenKeysList.contains(character) && allUsedLetters.find(character) == allUsedLetters.end()) {
+                additionalBrokenKeys += character;
+            }
+        }
+
+        printKey(keyboardNum);
+        printLine(printableLines);
+        printBrokenKeys(additionalBrokenKeys);
+        printSeparator();
+
+        keyboardNum++;
+    }
+
+    return 0;
+    
+}
