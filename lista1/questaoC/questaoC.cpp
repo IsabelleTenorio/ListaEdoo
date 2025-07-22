@@ -171,7 +171,8 @@ int main() {
 
         string lineContent;
         LinkedList<string> textLines;
-        while (getline(cin >> ws, lineContent)) {
+        cin.ignore();
+        while (getline(cin, lineContent)) {
             if (lineContent != "END") {
                 textLines.append(lineContent);    
             } else {
@@ -196,6 +197,7 @@ int main() {
                     if (!lineLetters.contains(lowerChar)) {
                         lineLetters.append(lowerChar);
                     }
+
 
                     if (brokenKeysList.contains(lowerChar)) {
                         canTypeLine = false;
