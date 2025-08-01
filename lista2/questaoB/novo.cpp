@@ -42,7 +42,7 @@ class HashTable {
     }
 
   public:
-    HashTable(int capacity = 16) : capacity(capacity), count(0) {
+    HashTable(int capacity = 199999) : capacity(capacity), count(0) {
         table = new Node<PairKeyValue<K, V>>*[capacity];
         for (int i = 0; i < capacity; ++i) {
             table[i] = nullptr;
@@ -96,6 +96,7 @@ class HashTable {
         }
         entry = entry->next;
       }
+      return 0; 
     }
 
     bool containsKey(const long long& key) {
@@ -130,19 +131,11 @@ int main () {
     int charIndex = c - 'a';
     HashTable<long long, int>& charTable = counts[charIndex];
 
-    long long countForOldSum = 0;
-    if (charTable.containsKey(currentPrefixSum)) {
-        countForOldSum = charTable.get(currentPrefixSum);
-    }
-    answer += countForOldSum;
+    answer += charTable.get(currentPrefixSum);
 
     currentPrefixSum += values[charIndex];
-
-    long long countForNewSum = 0;
-    if (charTable.containsKey(currentPrefixSum)) {
-        countForNewSum = charTable.get(currentPrefixSum);
-    }
-    charTable.insert(currentPrefixSum, countForNewSum + 1);
+    long long currentCount = charTable.get(currentPrefixSum);
+    charTable.insert(currentPrefixSum, currentCount + 1);
   }
 
   cout << answer << endl;
